@@ -29,7 +29,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     if (mode === 'login') {
       const ok = await login(email, password);
       if (ok) {
-        showToast('Successfully authenticated into PNG Trade Hub.', 'success');
+        showToast('Successfully authenticated into NexKina.', 'success');
         onClose();
       } else {
         showToast('Authentication failed. Check credentials or register a new account.', 'error');
@@ -76,7 +76,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-950/50">
           <div>
             <h3 className="text-base font-bold text-white">
-              {mode === 'login' ? 'Sign In to PNG Trade Hub' : 'Register New Trader Account'}
+              {mode === 'login' ? 'Sign In to NexKina' : 'Register New Trader Account'}
             </h3>
             <p className="text-xs text-slate-400">Production Ledger Escrow · Papua New Guinea</p>
           </div>

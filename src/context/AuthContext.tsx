@@ -8,7 +8,7 @@ interface AuthContextType {
   login: (email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
   signup: (userData: { email: string; username: string; password?: string; role?: UserRole; country?: string; phoneNumber?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
-  submitKYC: (docType: string, docNumber: string) => Promise<void>;
+  submitKYC: (idCardNumber: string, whatsappNumber: string) => Promise<boolean>;
   toggle2FA: () => void;
   refreshUserData: () => Promise<void>;
   isLoading: boolean;
@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [currentUser]);
 
-  // Initial load: check Supabase auth or fetch current profile
+  // Initial load: check Supabase auth or fetch current profile & auth state listener
   useEffect(() => {
     const initAuth = async () => {
       setIsLoading(true);
@@ -46,39 +46,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (isRealSupabaseConnected) {
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
-            // Fetch profile from Supabase profiles table
             const { data: profile } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', session.user.id)
               .single();
 
-            if (profile) {
+            const isOwnerAdmin = session.user.email?.toLowerCase() === 'adminsp247@gmail.com';
+            if (profile || session.user) {
               const mappedUser: User = {
-                id: profile.id,
-                email: profile.email || session.user.email || '',
-                username: profile.username || profile.email?.split('@')[0] || 'Trader',
-                role: profile.role || 'user',
-                kycStatus: profile.kyc_status || 'unverified',
-                kycDocumentType: profile.kyc_document_type,
-                kycDocumentNumber: profile.kyc_document_number,
-                kycSubmittedAt: profile.kyc_submitted_at,
-                kycVerifiedAt: profile.kyc_verified_at,
-                isFrozen: profile.is_frozen || false,
-                twoFactorEnabled: profile.two_factor_enabled || false,
-                totalTrades: profile.total_trades || 0,
-                completionRate: profile.completion_rate || 100,
-                positiveReviews: profile.positive_reviews || 0,
-                negativeReviews: profile.negative_reviews || 0,
-                phoneNumber: profile.phone_number,
-                country: profile.country || 'Papua New Guinea',
-                createdAt: profile.created_at || new Date().toISOString()
+                id: session.user.id,
+                email: session.user.email || '',
+                username: profile?.username || session.user.user_metadata?.username || 'Trader',
+                role: (profile?.role === 'admin' || isOwnerAdmin) ? 'admin' : 'user',
+                kycStatus: isOwnerAdmin ? 'verified' : (profile?.kyc_status || 'unverified'),
+                kycDocumentType: profile?.kyc_document_type,
+                kycDocumentNumber: profile?.kyc_document_number,
+                kycSubmittedAt: profile?.kyc_submitted_at,
+                kycVerifiedAt: profile?.kyc_verified_at,
+                isFrozen: profile?.is_frozen || false,
+                twoFactorEnabled: isOwnerAdmin ? true : (profile?.two_factor_enabled || false),
+                totalTrades: profile?.total_trades || 0,
+                completionRate: profile?.completion_rate || 100,
+                positiveReviews: profile?.positive_reviews || 0,
+                negativeReviews: profile?.negative_reviews || 0,
+                phoneNumber: profile?.phone_number,
+                country: profile?.country || 'Papua New Guinea',
+                createdAt: profile?.created_at || new Date().toISOString()
               };
               setCurrentUser(mappedUser);
             }
           }
         } else if (currentUser?.id) {
-          // Re-fetch from server to verify user is still valid and has fresh stats
           const res = await fetch(`/api/users/${currentUser.id}`);
           if (res.ok) {
             const data = await res.json();
@@ -93,6 +92,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     initAuth();
+
+    if (isRealSupabaseConnected) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          const isOwnerAdmin = session.user.email?.toLowerCase() === 'adminsp247@gmail.com';
+          const mappedUser: User = {
+            id: session.user.id,
+            email: session.user.email || '',
+            username: profile?.username || session.user.user_metadata?.username || 'Trader',
+            role: (profile?.role === 'admin' || isOwnerAdmin) ? 'admin' : 'user',
+            kycStatus: isOwnerAdmin ? 'verified' : (profile?.kyc_status || 'unverified'),
+            isFrozen: profile?.is_frozen || false,
+            twoFactorEnabled: isOwnerAdmin ? true : (profile?.two_factor_enabled || false),
+            totalTrades: profile?.total_trades || 0,
+            completionRate: profile?.completion_rate || 100,
+            positiveReviews: profile?.positive_reviews || 0,
+            negativeReviews: profile?.negative_reviews || 0,
+            country: profile?.country || 'Papua New Guinea',
+            createdAt: profile?.created_at || new Date().toISOString()
+          };
+          setCurrentUser(mappedUser);
+        } else if (event === 'SIGNED_OUT') {
+          setCurrentUser(null);
+        }
+      });
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
   }, []);
 
   // Fetch all registered users (for admin & marketplace references)
@@ -139,39 +174,73 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             password
           });
           if (!error && data?.user) {
-            const { data: profile } = await supabase
+            let { data: profile } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', data.user.id)
               .single();
 
-            if (profile) {
-              const mappedUser: User = {
-                id: profile.id,
-                email: profile.email || data.user.email || cleanEmail,
-                username: profile.username || (isOwnerAdmin ? 'AdminSP247' : 'Trader'),
-                role: (profile.role === 'admin' || isOwnerAdmin) ? 'admin' : 'user',
-                kycStatus: isOwnerAdmin ? 'verified' : (profile.kyc_status || 'unverified'),
-                isFrozen: profile.is_frozen || false,
-                twoFactorEnabled: isOwnerAdmin ? true : (profile.two_factor_enabled || false),
-                totalTrades: profile.total_trades || 0,
-                completionRate: profile.completion_rate || 100,
-                positiveReviews: profile.positive_reviews || 0,
-                negativeReviews: profile.negative_reviews || 0,
-                country: profile.country || 'Papua New Guinea',
-                createdAt: profile.created_at || new Date().toISOString()
-              };
-              setCurrentUser(mappedUser);
-              setIsLoading(false);
-              return { success: true };
+            if (!profile) {
+              const { data: newProf } = await supabase
+                .from('profiles')
+                .insert([{
+                  id: data.user.id,
+                  email: cleanEmail,
+                  username: data.user.user_metadata?.username || cleanEmail.split('@')[0],
+                  role: isOwnerAdmin ? 'admin' : 'user',
+                  kyc_status: isOwnerAdmin ? 'verified' : 'unverified'
+                }])
+                .select('*')
+                .single();
+              profile = newProf;
             }
+
+            const mappedUser: User = {
+              id: data.user.id,
+              email: cleanEmail,
+              username: profile?.username || data.user.user_metadata?.username || (isOwnerAdmin ? 'AdminSP247' : 'Trader'),
+              role: (profile?.role === 'admin' || isOwnerAdmin) ? 'admin' : 'user',
+              kycStatus: isOwnerAdmin ? 'verified' : (profile?.kyc_status || 'unverified'),
+              isFrozen: profile?.is_frozen || false,
+              twoFactorEnabled: isOwnerAdmin ? true : (profile?.two_factor_enabled || false),
+              totalTrades: profile?.total_trades || 0,
+              completionRate: profile?.completion_rate || 100,
+              positiveReviews: profile?.positive_reviews || 0,
+              negativeReviews: profile?.negative_reviews || 0,
+              country: profile?.country || 'Papua New Guinea',
+              createdAt: profile?.created_at || new Date().toISOString()
+            };
+            setCurrentUser(mappedUser);
+            setIsLoading(false);
+            return { success: true };
+          } else if (error) {
+            console.warn("[Supabase Auth] error:", error.message);
+            return { success: false, error: error.message };
           }
-        } catch (supabaseErr) {
+        } catch (supabaseErr: any) {
           console.warn("[Supabase Auth] Falling back to server authority:", supabaseErr);
         }
       }
 
-      return { success: false, error: "Login failed via Supabase" };
+      // 2. Authoritative server ledger API fallback
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, password })
+      });
+      const resData = await res.json();
+      if (!res.ok) {
+        setIsLoading(false);
+        return { success: false, error: resData.error || "Login failed" };
+      }
+      const verifiedUser: User = {
+        ...resData.user,
+        role: (resData.user.role === 'admin' || isOwnerAdmin) ? 'admin' : 'user',
+        kycStatus: isOwnerAdmin ? 'verified' : resData.user.kycStatus
+      };
+      setCurrentUser(verifiedUser);
+      setIsLoading(false);
+      return { success: true };
     } catch (err: any) {
       setIsLoading(false);
       return { success: false, error: err.message || "Network error during login" };
@@ -189,12 +258,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const password = userData.password || 'password123';
-
       const cleanEmail = userData.email.trim().toLowerCase();
       const isOwnerAdmin = cleanEmail === 'adminsp247@gmail.com';
       const assignedRole = (userData.role === 'admin' || isOwnerAdmin) ? 'admin' : 'user';
 
-      // 1. If real Supabase connected, create user via Supabase Auth
       if (isRealSupabaseConnected) {
         try {
           const { data, error } = await supabase.auth.signUp({
@@ -210,16 +277,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           });
           if (!error && data.user) {
-             return { success: true };
-          } else {
-             return { success: false, error: error?.message || "Signup failed" };
+            const newUser: User = {
+              id: data.user.id,
+              email: cleanEmail,
+              username: userData.username,
+              role: assignedRole,
+              kycStatus: isOwnerAdmin ? 'verified' : 'unverified',
+              isFrozen: false,
+              twoFactorEnabled: isOwnerAdmin,
+              totalTrades: 0,
+              completionRate: 100,
+              positiveReviews: 0,
+              negativeReviews: 0,
+              country: userData.country || 'Papua New Guinea',
+              createdAt: new Date().toISOString()
+            };
+            setCurrentUser(newUser);
+            setIsLoading(false);
+            return { success: true };
+          } else if (error) {
+            return { success: false, error: error.message || "Signup failed" };
           }
         } catch (supabaseErr) {
           console.warn("[Supabase Auth] Fallback on signup:", supabaseErr);
         }
       }
 
-      return { success: false, error: "Signup failed via Supabase" };
+      // Server ledger fallback
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: cleanEmail,
+          username: userData.username,
+          password,
+          role: assignedRole,
+          country: userData.country || 'Papua New Guinea',
+          phoneNumber: userData.phoneNumber
+        })
+      });
+      const resData = await res.json();
+      if (!res.ok) {
+        setIsLoading(false);
+        return { success: false, error: resData.error || "Registration failed" };
+      }
+      const verifiedUser: User = {
+        ...resData.user,
+        role: (resData.user.role === 'admin' || isOwnerAdmin) ? 'admin' : 'user',
+        kycStatus: isOwnerAdmin ? 'verified' : resData.user.kycStatus
+      };
+      setCurrentUser(verifiedUser);
+      setIsLoading(false);
+      return { success: true };
     } catch (err: any) {
       setIsLoading(false);
       return { success: false, error: err.message || "Network error during sign up" };
@@ -234,20 +343,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('png_hub_auth_user');
   };
 
-  const submitKYC = async (docType: string, docNumber: string) => {
-    if (!currentUser) return;
+  const submitKYC = async (idCardNumber: string, whatsappNumber: string): Promise<boolean> => {
+    if (!currentUser) return false;
     try {
       const res = await fetch(`/api/users/${currentUser.id}/kyc`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ documentType: docType, documentNumber: docNumber })
+        body: JSON.stringify({ idCardNumber, whatsappNumber })
       });
       if (res.ok) {
         const data = await res.json();
         setCurrentUser(data.user);
+        localStorage.setItem('png_hub_auth_user', JSON.stringify(data.user));
+        return true;
       }
+      return false;
     } catch (e) {
       console.error("KYC submission error:", e);
+      return false;
     }
   };
 

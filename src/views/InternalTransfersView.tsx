@@ -73,7 +73,7 @@ export const InternalTransfersView: React.FC = () => {
           <span>Internal USDT Transfers (Instant & 0% Fee)</span>
         </h1>
         <p className="text-xs text-slate-400 mt-1">
-          Send USDT or crypto directly to any registered PNG Trade Hub user. Settles atomically via internal ledger.
+          Send USDT or crypto directly to any registered NexKina user. Settles atomically via internal ledger.
         </p>
       </div>
 
@@ -121,8 +121,13 @@ export const InternalTransfersView: React.FC = () => {
 
             {/* Recipient Input */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Recipient Username or Registered Email
+              <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                <span>Recipient Username, Email, or 9-Digit Binance ID</span>
+                {currentUser && (
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Your Binance ID: <strong className="text-emerald-400 font-bold">{currentUser.binanceId || '928471928'}</strong>
+                  </span>
+                )}
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
@@ -131,10 +136,38 @@ export const InternalTransfersView: React.FC = () => {
                   required
                   value={recipient}
                   onChange={e => setRecipient(e.target.value)}
-                  placeholder="e.g. Sarah_Merchant or name@pngtradehub.com"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition"
+                  placeholder="e.g. Sarah_Merchant or 9-digit Binance ID (e.g. 928471928)"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition font-mono"
                 />
               </div>
+
+              {/* Real-time Recipient Verification Card */}
+              {recipient.trim() && (() => {
+                const match = allUsers.find(u => 
+                  u.username.toLowerCase() === recipient.trim().toLowerCase() ||
+                  u.email.toLowerCase() === recipient.trim().toLowerCase() ||
+                  u.binanceId === recipient.trim()
+                );
+                if (match) {
+                  return (
+                    <div className="mt-2 p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/40 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <div>
+                          <div className="font-bold text-white">Verified Recipient: @{match.username}</div>
+                          <div className="text-[10px] text-slate-400 font-mono">Binance ID: {match.binanceId || '928471928'} • {match.email}</div>
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">Verified</span>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="mt-1.5 text-[10px] text-amber-400">
+                    ⚠️ Enter valid username, email, or 9-digit Binance ID of a registered user.
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Asset Choice */}

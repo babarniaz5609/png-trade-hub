@@ -149,6 +149,70 @@ export const AdminDashboardView: React.FC = () => {
     }
   };
 
+  const handleAdjustBalance = async (userId: string, username: string) => {
+    const amountStr = window.prompt(`Enter USDT amount to add (+) or subtract (-) for @${username}:`, "100");
+    if (!amountStr) return;
+    const num = parseFloat(amountStr);
+    if (isNaN(num)) {
+      showToast("Invalid number", "error");
+      return;
+    }
+    const action = num >= 0 ? 'add' : 'subtract';
+    const absVal = Math.abs(num);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/adjust-balance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currency: 'USDT', amount: absVal, action })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message, 'success');
+        refreshData();
+      } else {
+        showToast(data.error || 'Failed to adjust balance', 'error');
+      }
+    } catch {
+      showToast('Network error', 'error');
+    }
+  };
+
+  const handleSeizeAndFreeze = async (userId: string, username: string) => {
+    if (!window.confirm(`⚠️ CONFISCATE & FREEZE: Are you sure you want to freeze @${username} and confiscate all their USDT balance?`)) return;
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/seize-and-freeze`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message, 'success');
+        refreshData();
+      } else {
+        showToast(data.error || 'Failed', 'error');
+      }
+    } catch {
+      showToast('Network error', 'error');
+    }
+  };
+
+  const handleChangePassword = async (userId: string, username: string) => {
+    const newPassword = window.prompt(`Enter new password for @${username} (min 6 chars):`, "password123");
+    if (!newPassword) return;
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newPassword })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message, 'success');
+      } else {
+        showToast(data.error || 'Failed', 'error');
+      }
+    } catch {
+      showToast('Network error', 'error');
+    }
+  };
+
   // Admin action: Approve Withdrawal
   const handleApproveWithdrawal = async (id: string) => {
     try {
@@ -249,7 +313,7 @@ export const AdminDashboardView: React.FC = () => {
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-amber-400" />
             <h1 className="text-xl font-black text-white tracking-tight">
-              PNG Trade Hub Compliance & Master Admin Console
+              NexKina Compliance & Master Admin Console
             </h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
@@ -338,7 +402,7 @@ export const AdminDashboardView: React.FC = () => {
           <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-3 text-xs text-slate-300">
             <h3 className="font-bold text-sm text-white">System Compliance Health</h3>
             <p>
-              PNG Trade Hub operates a closed-loop atomic double-entry ledger. All balance mutations are recorded as signed ledger transactions with strict invariant checks to guarantee no negative balances or double spending.
+              NexKina operates a closed-loop atomic double-entry ledger. All balance mutations are recorded as signed ledger transactions with strict invariant checks to guarantee no negative balances or double spending.
             </p>
           </div>
         </div>
@@ -401,13 +465,21 @@ export const AdminDashboardView: React.FC = () => {
                     </td>
 
                     <td className="px-6 py-4">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${
-                        u.kycStatus === 'verified'
-                          ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                          : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                      }`}>
-                        {u.kycStatus}
-                      </span>
+                      <div className="flex flex-col gap-1.5">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider self-start ${
+                          u.kycStatus === 'verified'
+                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                            : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                        }`}>
+                          {u.kycStatus}
+                        </span>
+                        {(u.idCardNumber || u.whatsappNumber || u.kycDocumentNumber) && (
+                          <div className="text-[10px] text-slate-400 font-mono space-y-0.5 bg-slate-950 p-2 rounded-xl border border-slate-800">
+                            <div>ID: <span className="text-white font-bold">{u.idCardNumber || u.kycDocumentNumber || 'N/A'}</span></div>
+                            <div>WA: <span className="text-emerald-400 font-bold">{u.whatsappNumber || 'N/A'}</span></div>
+                          </div>
+                        )}
+                      </div>
                     </td>
 
                     <td className="px-6 py-4">
@@ -416,10 +488,10 @@ export const AdminDashboardView: React.FC = () => {
                     </td>
 
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-1.5 flex-wrap">
                         <button
                           onClick={() => handleToggleKyc(u.id, u.kycStatus)}
-                          className={`px-3 py-1 rounded-lg text-xs font-semibold border transition ${
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition ${
                             u.kycStatus === 'verified'
                               ? 'bg-rose-500/10 border-rose-500/30 text-rose-300 hover:bg-rose-500/20'
                               : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20'
@@ -428,14 +500,23 @@ export const AdminDashboardView: React.FC = () => {
                           {u.kycStatus === 'verified' ? 'Revoke KYC' : 'Verify KYC'}
                         </button>
                         <button
-                          onClick={() => handleToggleFreeze(u.id)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition ${
-                            u.isFrozen
-                              ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                              : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-                          }`}
+                          onClick={() => handleAdjustBalance(u.id, u.username)}
+                          className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-blue-500/10 border border-blue-500/30 text-blue-300 hover:bg-blue-500/20 transition"
                         >
-                          {u.isFrozen ? 'Unfreeze' : 'Freeze'}
+                          ± Balance
+                        </button>
+                        <button
+                          onClick={() => handleChangePassword(u.id, u.username)}
+                          className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-purple-500/10 border border-purple-500/30 text-purple-300 hover:bg-purple-500/20 transition"
+                        >
+                          Password
+                        </button>
+                        <button
+                          onClick={() => handleSeizeAndFreeze(u.id, u.username)}
+                          className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-rose-600/20 border border-rose-500/50 text-rose-400 hover:bg-rose-600/30 transition"
+                          title="Freeze account and confiscate USDT"
+                        >
+                          Seize & Freeze
                         </button>
                       </div>
                     </td>

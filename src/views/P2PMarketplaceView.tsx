@@ -22,7 +22,7 @@ import { TradeInitiateModal } from '../components/TradeInitiateModal';
 import { PNG_PAYMENT_METHODS } from '../lib/tatum';
 
 export const P2PMarketplaceView: React.FC = () => {
-  const { offers, trades, setActiveTradeId } = useApp();
+  const { offers, trades, setActiveTradeId, setActiveTab } = useApp();
   const { currentUser } = useAuth();
 
   const [tradeType, setTradeType] = useState<'BUY' | 'SELL'>('BUY'); // BUY = Taker wants to buy crypto from seller ads
@@ -117,10 +117,13 @@ export const P2PMarketplaceView: React.FC = () => {
               <span>Post Trade Ad (Dealer)</span>
             </button>
           ) : (
-            <div className="px-4 py-2.5 bg-slate-900 border border-amber-500/30 text-amber-300 font-bold text-xs rounded-xl flex items-center gap-2 shadow-md">
-              <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl flex items-center gap-2 self-start md:self-auto shadow-md transition group animate-pulse"
+            >
+              <span className="w-2 h-2 rounded-full bg-slate-950"></span>
               <span>Complete KYC to Post Ads</span>
-            </div>
+            </button>
           )}
         </div>
 
@@ -192,13 +195,9 @@ export const P2PMarketplaceView: React.FC = () => {
                 onChange={e => setSelectedPaymentMethod(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 font-medium focus:outline-none focus:border-emerald-500"
               >
-                <option value="ALL">All Payment Methods (PNG & Global)</option>
+                <option value="ALL">All PNG Banks (BSP & Kina)</option>
                 <option value="Bank of South Pacific">Bank of South Pacific (BSP)</option>
-                <option value="Kina Bank">Kina Bank Transfer</option>
-                <option value="Digicel CellMoni">Digicel CellMoni</option>
-                <option value="ANZ">ANZ Papua New Guinea</option>
-                <option value="MoniPlus">MoniPlus</option>
-                <option value="Wise">Wise (International)</option>
+                <option value="Kina Bank">Kina Bank</option>
               </select>
             </div>
           </div>
@@ -256,9 +255,12 @@ export const P2PMarketplaceView: React.FC = () => {
                 Post a New Ad (Dealer)
               </button>
             ) : (
-              <div className="mt-2 px-4 py-2 bg-slate-800 border border-amber-500/30 text-amber-300 font-bold text-xs rounded-xl inline-flex items-center justify-center">
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className="mt-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow transition"
+              >
                 Complete KYC to Post Ads
-              </div>
+              </button>
             )}
           </div>
         ) : (

@@ -2,6 +2,7 @@ import React from 'react';
 import { ShieldCheck, ArrowLeftRight, Server, Cpu, Database, ExternalLink, HelpCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { NexKinaLogo } from './NexKinaLogo';
 
 export const Footer: React.FC = () => {
   const { setActiveTab } = useApp();
@@ -14,13 +15,10 @@ export const Footer: React.FC = () => {
           {/* Brand Col */}
           <div className="md:col-span-1 space-y-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950 font-bold">
-                <ArrowLeftRight className="w-4 h-4" />
-              </div>
-              <span className="font-bold text-base text-white">PNG Trade Hub</span>
+              <NexKinaLogo size="sm" showTagline={false} />
             </div>
             <p className="text-slate-400 text-xs leading-relaxed">
-              Papua New Guinea's premier peer-to-peer cryptocurrency escrow trading platform. Buy and sell USDT, TRX, ETH, and BNB with PNG Kina (PGK) safely.
+              NexKina is Papua New Guinea's premier peer-to-peer cryptocurrency escrow trading platform. TRADE | PAY | GROW safely from Papua New Guinea to the World.
             </p>
           </div>
 
@@ -56,17 +54,17 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Architecture & Tatum Support */}
+          {/* Multi-Chain Networks */}
           <div>
-            <h4 className="font-semibold text-slate-200 uppercase tracking-wider text-[11px] mb-3">Tatum & Blockchain Ready</h4>
+            <h4 className="font-semibold text-slate-200 uppercase tracking-wider text-[11px] mb-3">Multi-Chain USDT Networks</h4>
             <ul className="space-y-2 text-slate-400">
               <li className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <span>USDT TRC-20 (TronScan Fast)</span>
+                <span>USDT TRC-20 (Tron Network)</span>
               </li>
               <li className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <span>USDT BEP-20 (BSC Smart Chain)</span>
+                <span>USDT BEP-20 (Binance Smart Chain)</span>
               </li>
               <li className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
@@ -77,7 +75,7 @@ export const Footer: React.FC = () => {
                 <span>Native TRX, ETH, & BNB</span>
               </li>
               <li className="pt-1 text-[11px] text-slate-500">
-                Backend architecture prepared with server-side signing & webhooks.
+                Optimized for fast and secure peer-to-peer settlement.
               </li>
             </ul>
           </div>
@@ -91,8 +89,8 @@ export const Footer: React.FC = () => {
                 <span>100% Locked Escrow before any PGK bank transfer is requested.</span>
               </div>
               <div className="flex items-start gap-2 text-slate-300">
-                <Database className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-                <span>Supabase PostgreSQL Schema with Atomic Lock & RLS Policies.</span>
+                <Database className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                <span>Secure Bank-grade Encryption & Verified KYC Standards.</span>
               </div>
               <div className="pt-2">
                 <button 
@@ -109,7 +107,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Disclaimer */}
         <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 text-[11px]">
-          <p>© {new Date().getFullYear()} PNG Trade Hub. Built for secure and reliable P2P trading.</p>
+          <p>© {new Date().getFullYear()} NexKina. Built for secure and reliable P2P trading.</p>
           <div className="flex items-center gap-4">
             {isAdmin && (
               <button onClick={() => setActiveTab('admin')} className="text-slate-400 hover:text-white">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   User, 
   ShieldCheck, 
@@ -22,7 +22,35 @@ import { FIAT_RATES } from '../lib/tatum';
 
 export const DashboardView: React.FC = () => {
   const { wallet, trades, offers, setActiveTradeId, setActiveTab } = useApp();
-  const { currentUser } = useAuth();
+  const { currentUser, submitKYC } = useAuth();
+
+  const [idCardNumber, setIdCardNumber] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [kycError, setKycError] = useState('');
+
+  const handleKycSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!idCardNumber.trim() || !whatsappNumber.trim()) {
+      setKycError('Please fill out both ID Card and WhatsApp fields.');
+      return;
+    }
+    setIsSubmitting(true);
+    setKycError('');
+    try {
+      const ok = await submitKYC(idCardNumber.trim(), whatsappNumber.trim());
+      if (ok) {
+        setIdCardNumber('');
+        setWhatsappNumber('');
+      } else {
+        setKycError('KYC submission failed. Please try again.');
+      }
+    } catch (err) {
+      setKycError('An unexpected error occurred.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (!wallet) return null;
 
@@ -84,6 +112,76 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* KYC Identity Verification Sections */}
+      {currentUser.kycStatus === 'unverified' && (
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+          <div>
+            <div className="flex items-center gap-2 text-amber-500">
+              <ShieldCheck className="w-5 h-5" />
+              <h2 className="text-lg font-black text-white">Identity Verification (KYC) Required</h2>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Verify your identity with your ID Card and WhatsApp number to unlock ad postings, high-volume trades, and premium dealer status on NexKina.
+            </p>
+          </div>
+
+          <form onSubmit={handleKycSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">ID Card Number</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. 12345-6789012-3"
+                value={idCardNumber}
+                onChange={(e) => setIdCardNumber(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500 font-mono transition"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">WhatsApp Number</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. +923001234567"
+                value={whatsappNumber}
+                onChange={(e) => setWhatsappNumber(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500 font-mono transition"
+              />
+            </div>
+
+            {kycError && <div className="md:col-span-2 text-xs text-rose-400 font-semibold">{kycError}</div>}
+
+            <div className="md:col-span-2 flex justify-end">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-amber-500/10 transition"
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Verification Details'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {currentUser.kycStatus === 'pending' && (
+        <div className="bg-slate-900 border border-amber-500/20 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-amber-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+              <h2 className="text-base font-black text-white">KYC Verification Under Review</h2>
+            </div>
+            <p className="text-xs text-slate-400 max-w-2xl">
+              Your ID Card Number (<span className="font-mono text-slate-200">{currentUser.idCardNumber || currentUser.kycDocumentNumber || 'Submitted'}</span>) and WhatsApp Number (<span className="font-mono text-slate-200">{currentUser.whatsappNumber || 'Submitted'}</span>) are currently under review. A compliance officer will review and verify your account shortly.
+            </p>
+          </div>
+          <span className="px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-xl text-xs font-bold shrink-0">
+            Pending Approval
+          </span>
+        </div>
+      )}
 
       {/* Quick Action Bento Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

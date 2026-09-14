@@ -5,12 +5,15 @@ export interface User {
   id: string;
   email: string;
   username: string;
+  binanceId?: string;
   role: UserRole;
   kycStatus: KYCStatus;
   kycSubmittedAt?: string;
   kycVerifiedAt?: string;
   kycDocumentType?: string;
   kycDocumentNumber?: string;
+  idCardNumber?: string;
+  whatsappNumber?: string;
   isFrozen: boolean;
   twoFactorEnabled: boolean;
   createdAt: string;

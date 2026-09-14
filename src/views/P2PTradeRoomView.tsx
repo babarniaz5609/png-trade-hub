@@ -195,7 +195,7 @@ export const P2PTradeRoomView: React.FC = () => {
             <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center gap-3 text-xs text-emerald-300">
               <Lock className="w-4 h-4 text-emerald-400 shrink-0" />
               <span>
-                <strong>100% Escrow Active:</strong> {activeTrade.cryptoAmount} {activeTrade.cryptoCurrency} is currently held safely in PNG Trade Hub reserve vault.
+                <strong>100% Escrow Active:</strong> {activeTrade.cryptoAmount} {activeTrade.cryptoCurrency} is currently held safely in NexKina reserve vault.
               </span>
             </div>
           </div>
@@ -527,7 +527,7 @@ export const P2PTradeRoomView: React.FC = () => {
             <div className="text-center space-y-1">
               <h3 className="text-base font-bold text-white">Open Escrow Dispute</h3>
               <p className="text-xs text-slate-400">
-                A PNG Trade Hub compliance arbitrator will review bank statements and audit logs.
+                A NexKina compliance arbitrator will review bank statements and audit logs.
               </p>
             </div>
 

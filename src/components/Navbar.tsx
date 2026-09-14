@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
+import { NexKinaLogo } from './NexKinaLogo';
 
 interface NavbarProps {
   onOpenAuth: () => void;
@@ -56,10 +57,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
           <div className="flex items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              PNG Trade Hub
+              NexKina
             </span>
             <span className="hidden sm:inline text-slate-400">
-              Production P2P USDT Escrow Platform · Papua New Guinea
+              TRADE | PAY | GROW - Papua New Guinea to the World
             </span>
           </div>
 
@@ -116,22 +117,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
               }}
               className="flex items-center gap-3 group text-left"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 p-0.5 shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition transform">
-                <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                  <span className="font-black text-lg bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
-                    PG
-                  </span>
-                </div>
-              </div>
-              <div>
-                <div className="font-black tracking-tight text-white flex items-center gap-1.5 text-base">
-                  <span>PNG Trade Hub</span>
-                </div>
-                <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                  <span>P2P USDT Escrow</span>
-                  <span className="text-emerald-400 font-semibold">PGK / AUD / USD</span>
-                </div>
-              </div>
+              <NexKinaLogo size="md" />
             </button>
 
             {/* Desktop Navigation Links */}

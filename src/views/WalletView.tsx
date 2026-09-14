@@ -126,7 +126,7 @@ export const WalletView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">
               <Wallet className="w-4 h-4" />
-              <span>Real Ledger Balances · PNG Trade Hub</span>
+              <span>Real Ledger Balances · NexKina</span>
             </div>
 
             <div className="flex flex-wrap items-baseline gap-3">

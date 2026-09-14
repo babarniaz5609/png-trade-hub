@@ -73,7 +73,7 @@ export const HomeView: React.FC = () => {
               <div className="pt-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Supported PNG Payment Rails:</p>
                 <div className="flex flex-wrap gap-2">
-                  {['Bank of South Pacific (BSP)', 'Kina Bank', 'Digicel CellMoni', 'ANZ PNG', 'Instant Transfers'].map((p, i) => (
+                  {['Bank of South Pacific (BSP)', 'Kina Bank'].map((p, i) => (
                     <span key={i} className="px-2.5 py-1 rounded-md bg-slate-800/90 border border-slate-700 text-xs text-slate-200 font-medium flex items-center gap-1.5">
                       <Building2 className="w-3.5 h-3.5 text-emerald-400" />
                       {p}
@@ -122,11 +122,11 @@ export const HomeView: React.FC = () => {
               <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative">
                 <div className="flex items-center justify-between pb-4 border-b border-slate-800">
                   <div>
-                    <h3 className="text-base font-bold text-white">Instant P2P Converter</h3>
-                    <p className="text-xs text-slate-400">Estimated market index</p>
+                    <h3 className="text-base font-bold text-white">P2P Trade Estimator</h3>
+                    <p className="text-xs text-slate-400">Dealers set custom rates in ads</p>
                   </div>
                   <div className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/20">
-                    1 USDT ≈ 4.15 PGK
+                    Merchant Market Rates
                   </div>
                 </div>
 
@@ -214,7 +214,7 @@ export const HomeView: React.FC = () => {
             How Escrow Protection Protects Both Buyer & Seller
           </p>
           <p className="text-slate-400 text-sm mt-3">
-            PNG Trade Hub acts as a neutral third-party vault holding crypto until payment is verified by the seller.
+            NexKina acts as a neutral third-party vault holding crypto until payment is verified by the seller.
           </p>
         </div>
 
@@ -223,7 +223,7 @@ export const HomeView: React.FC = () => {
             {
               step: '01',
               title: 'Order Placed & Escrow Locked',
-              desc: 'When an order is created, the sellers USDT is immediately locked into the PNG Trade Hub secure vault.',
+              desc: 'When an order is created, the sellers USDT is immediately locked into the NexKina secure vault.',
               icon: Lock,
               color: 'text-emerald-400'
             },

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
@@ -59,10 +60,13 @@ export interface UserProfile {
   id: string;
   email: string;
   username: string;
+  binanceId?: string;
   role: 'user' | 'admin';
   kycStatus: 'unverified' | 'pending' | 'verified' | 'rejected';
   kycDocumentType?: string;
   kycDocumentNumber?: string;
+  idCardNumber?: string;
+  whatsappNumber?: string;
   kycSubmittedAt?: string;
   kycVerifiedAt?: string;
   isFrozen: boolean;
@@ -529,16 +533,23 @@ app.post("/api/auth/register", (req, res) => {
       if (u.email.toLowerCase() === cleanEmail) {
         return res.status(400).json({ error: "Email already registered" });
       }
-      if (u.username.toLowerCase() === username.toLowerCase()) {
-        return res.status(400).json({ error: "Username already taken" });
-      }
+    }
+
+    let baseUsername = (username ? username.trim() : cleanEmail.split('@')[0]).replace(/[^a-zA-Z0-9_]/g, '');
+    if (!baseUsername) baseUsername = 'Trader';
+    let finalUsername = baseUsername;
+    let exists = Array.from(usersStore.values()).some(u => u.username.toLowerCase() === finalUsername.toLowerCase());
+    if (exists) {
+      finalUsername = `${baseUsername}_${Math.floor(1000 + Math.random() * 9000)}`;
     }
 
     const newId = isOwnerAdmin ? 'usr_admin_sp247' : `usr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const binanceId = isOwnerAdmin ? '100000001' : Math.floor(100000000 + Math.random() * 900000000).toString();
     const newUser: UserProfile = {
       id: newId,
       email: cleanEmail,
-      username: username.trim(),
+      username: finalUsername,
+      binanceId,
       role: isOwnerAdmin ? 'admin' : 'user',
       kycStatus: isOwnerAdmin ? 'verified' : 'unverified',
       isFrozen: false,
@@ -590,6 +601,7 @@ app.post("/api/auth/login", (req, res) => {
         id: "usr_admin_sp247",
         email: "adminsp247@gmail.com",
         username: "AdminSP247",
+        binanceId: "100000001",
         role: "admin",
         kycStatus: "verified",
         isFrozen: false,
@@ -600,6 +612,7 @@ app.post("/api/auth/login", (req, res) => {
         negativeReviews: 0,
         country: "Papua New Guinea",
         preferredFiat: "PGK",
+        passwordHash: "admin123",
         createdAt: new Date().toISOString()
       };
       usersStore.set(found.id, found);
@@ -611,10 +624,11 @@ app.post("/api/auth/login", (req, res) => {
       return res.status(401).json({ error: "Account not found. Please register." });
     }
 
-    // Ensure adminsp247@gmail.com always retains admin role
+    // Ensure adminsp247@gmail.com always retains admin role and password
     if (found.email.toLowerCase() === 'adminsp247@gmail.com') {
       found.role = 'admin';
       found.kycStatus = 'verified';
+      if (!found.passwordHash) found.passwordHash = 'admin123';
       syncUserProfile(found);
     }
 
@@ -676,11 +690,20 @@ app.post("/api/users/:id/kyc", (req, res) => {
   const user = usersStore.get(req.params.id);
   if (!user) return res.status(404).json({ error: "User not found" });
 
-  const { documentType, documentNumber } = req.body;
+  const { idCardNumber, whatsappNumber } = req.body;
+  if (!idCardNumber || !whatsappNumber) {
+    return res.status(400).json({ error: "ID Card Number and WhatsApp Number are required" });
+  }
+
   user.kycStatus = 'pending';
-  user.kycDocumentType = documentType;
-  user.kycDocumentNumber = documentNumber;
+  user.idCardNumber = idCardNumber;
+  user.whatsappNumber = whatsappNumber;
+  // Also keep backward compatibility
+  user.kycDocumentType = "ID Card / WhatsApp";
+  user.kycDocumentNumber = idCardNumber;
   user.kycSubmittedAt = new Date().toISOString();
+
+  syncUserProfile(user);
 
   res.json({ success: true, user: { ...user, passwordHash: undefined } });
 });
@@ -730,6 +753,8 @@ app.post("/api/admin/users/:id/verify-kyc", (req, res) => {
   user.kycStatus = status || 'verified';
   if (status === 'verified') user.kycVerifiedAt = new Date().toISOString();
 
+  syncUserProfile(user);
+
   res.json({ success: true, user: { ...user, passwordHash: undefined } });
 });
 
@@ -739,6 +764,65 @@ app.post("/api/admin/users/:id/toggle-freeze", (req, res) => {
 
   user.isFrozen = !user.isFrozen;
   res.json({ success: true, user: { ...user, passwordHash: undefined } });
+});
+
+app.post("/api/admin/users/:id/adjust-balance", (req, res) => {
+  const userId = req.params.id;
+  const user = usersStore.get(userId);
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  const { currency = 'USDT', amount, action } = req.body;
+  const numAmount = Number(amount);
+  if (isNaN(numAmount) || numAmount <= 0) {
+    return res.status(400).json({ error: "Invalid adjustment amount" });
+  }
+
+  const wallet = walletsStore.get(userId) || initUserWallet(userId);
+  const currKey = currency as keyof typeof wallet.balances;
+  if (wallet.balances[currKey]) {
+    if (action === 'add') {
+      wallet.balances[currKey].available += numAmount;
+    } else {
+      wallet.balances[currKey].available = Math.max(0, wallet.balances[currKey].available - numAmount);
+    }
+    wallet.updatedAt = new Date().toISOString();
+    recordAuditTrail(userId, "ADMIN_BALANCE_ADJUST", "adminsp247@gmail.com", { currency, amount: numAmount, action });
+    return res.json({ success: true, message: `Successfully ${action === 'add' ? 'added' : 'subtracted'} ${numAmount} ${currency} for @${user.username}` });
+  }
+  res.status(400).json({ error: "Unsupported currency" });
+});
+
+app.post("/api/admin/users/:id/seize-and-freeze", (req, res) => {
+  const userId = req.params.id;
+  const user = usersStore.get(userId);
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  user.isFrozen = true;
+  const wallet = walletsStore.get(userId);
+  let confiscatedUsdt = 0;
+  if (wallet && wallet.balances.USDT) {
+    confiscatedUsdt = wallet.balances.USDT.available;
+    wallet.balances.USDT.available = 0;
+    wallet.balances.USDT.lockedEscrow = 0;
+  }
+
+  recordAuditTrail(userId, "ADMIN_SEIZE_AND_FREEZE", "adminsp247@gmail.com", { confiscatedUsdt });
+  res.json({ success: true, message: `Account frozen and ${confiscatedUsdt} USDT confiscated successfully.` });
+});
+
+app.post("/api/admin/users/:id/change-password", (req, res) => {
+  const userId = req.params.id;
+  const user = usersStore.get(userId);
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  const { newPassword } = req.body;
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ error: "Password must be at least 6 characters" });
+  }
+
+  user.passwordHash = newPassword;
+  recordAuditTrail(userId, "ADMIN_PASSWORD_CHANGE", "adminsp247@gmail.com", {});
+  res.json({ success: true, message: `Password successfully updated for @${user.username}` });
 });
 
 // ==============================================================================
@@ -808,7 +892,8 @@ const handleInternalTransfer = (req: express.Request, res: express.Response) => 
       if (
         u.id === recipientIdentifier || 
         u.email.toLowerCase() === recipientIdentifier.toLowerCase() || 
-        u.username.toLowerCase() === recipientIdentifier.toLowerCase()
+        u.username.toLowerCase() === recipientIdentifier.toLowerCase() ||
+        u.binanceId === recipientIdentifier
       ) {
         recipient = u;
         break;
@@ -816,7 +901,7 @@ const handleInternalTransfer = (req: express.Request, res: express.Response) => 
     }
 
     if (!recipient) {
-      return res.status(404).json({ error: `Recipient "${recipientIdentifier}" not found on PNG Trade Hub` });
+      return res.status(404).json({ error: `Recipient "${recipientIdentifier}" not found on NexKina` });
     }
 
     if (recipient.id === senderId) {
@@ -1265,7 +1350,7 @@ app.post("/api/p2p/trades", (req, res) => {
         id: `msg_sys_1_${tradeId}`,
         tradeId,
         senderId: 'system',
-        senderUsername: 'PNG Trade Hub Escrow',
+        senderUsername: 'NexKina Escrow',
         message: `🛡️ Escrow Activated: ${numCrypto} ${offer.cryptoCurrency} has been atomically locked from seller @${sellerUsername} in the escrow vault. Buyer @${buyerUsername}, please transfer ${numFiat} ${offer.fiatCurrency} within ${offer.paymentWindowMinutes} minutes.`,
         isSystem: true,
         timestamp: new Date().toISOString()
@@ -1328,7 +1413,7 @@ const handleMarkPaid = (req: express.Request, res: express.Response) => {
       id: `msg_${Date.now()}`,
       tradeId: trade.id,
       senderId: 'system',
-      senderUsername: 'PNG Trade Hub Escrow',
+      senderUsername: 'NexKina Escrow',
       message: `💳 Buyer @${trade.buyerUsername} marked the trade as PAID${paymentReference ? ` (Ref: ${paymentReference})` : ''}. Seller @${trade.sellerUsername}, please check your account and confirm receipt to release crypto.`,
       isSystem: true,
       timestamp: new Date().toISOString()
@@ -1372,7 +1457,7 @@ app.post("/api/p2p/trades/:id/release", (req, res) => {
       id: `msg_${Date.now()}`,
       tradeId: trade.id,
       senderId: 'system',
-      senderUsername: 'PNG Trade Hub Escrow',
+      senderUsername: 'NexKina Escrow',
       message: `🎉 Escrow Released: ${trade.cryptoAmount} ${trade.cryptoCurrency} has been credited to buyer @${trade.buyerUsername}'s available balance. Trade completed successfully!`,
       isSystem: true,
       timestamp: new Date().toISOString()
@@ -1413,7 +1498,7 @@ app.post("/api/p2p/trades/:id/cancel", (req, res) => {
       id: `msg_${Date.now()}`,
       tradeId: trade.id,
       senderId: 'system',
-      senderUsername: 'PNG Trade Hub Escrow',
+      senderUsername: 'NexKina Escrow',
       message: `🚫 Order was CANCELLED. Escrow of ${trade.cryptoAmount} ${trade.cryptoCurrency} has been refunded to seller @${trade.sellerUsername}'s available balance.`,
       isSystem: true,
       timestamp: new Date().toISOString()
@@ -1767,7 +1852,7 @@ async function startServer() {
 
   await seedInitialProductionAccounts();
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`PNG Trade Hub Production Server running at http://0.0.0.0:${PORT}`);
+    console.log(`NexKina Production Server running at http://0.0.0.0:${PORT}`);
     console.log(`[Tatum Multi-Chain Engine]: ${isTatumConnected() ? 'CONNECTED' : 'INTEGRATION PENDING (Awaiting TATUM_API_KEY)'}`);
   });
 }

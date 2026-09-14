@@ -135,13 +135,8 @@ export interface TatumWebhookEvent {
 }
 
 export const PNG_PAYMENT_METHODS = [
-  { id: 'bsp', name: 'Bank South Pacific (BSP)', category: 'Bank', fee: '0%', badge: 'Popular in PNG' },
-  { id: 'kina_bank', name: 'Kina Bank', category: 'Bank', fee: '0%', badge: 'Instant App Transfer' },
-  { id: 'cellmoni', name: 'Digicel CellMoni', category: 'Mobile', fee: '0%', badge: 'Mobile Wallet' },
-  { id: 'anz_png', name: 'ANZ Papua New Guinea', category: 'Bank', fee: '0%', badge: 'Corporate/Private' },
-  { id: 'moniplus', name: 'MoniPlus', category: 'Mobile', fee: '0%', badge: 'Fast Transfer' },
-  { id: 'wise', name: 'Wise (International)', category: 'Other', fee: '0%', badge: 'AUD / USD' },
-  { id: 'cash_pom', name: 'Cash in Person (Port Moresby)', category: 'Other', fee: '0%', badge: 'Escrow Meetup' },
+  { id: 'bsp', name: 'Bank South Pacific (BSP)', category: 'Bank', fee: '0%', badge: 'Primary PNG Bank' },
+  { id: 'kina_bank', name: 'Kina Bank', category: 'Bank', fee: '0%', badge: 'Instant PNG Transfer' },
 ];
 
 export const FIAT_RATES: Record<string, number> = {

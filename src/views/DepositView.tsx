@@ -41,7 +41,7 @@ export const DepositView: React.FC = () => {
           <span>Deposit USDT & Multi-Chain Assets</span>
         </h1>
         <p className="text-xs text-slate-400 mt-1">
-          Fund your PNG Trade Hub balance to trade P2P or hold securely in the internal ledger.
+          Fund your NexKina balance to trade P2P or hold securely in the internal ledger.
         </p>
       </div>
 
@@ -207,7 +207,7 @@ export const DepositView: React.FC = () => {
               <div className="flex items-start gap-2.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1.5"></span>
                 <p>
-                  <strong className="text-slate-200">Zero-Fee Internal Transfers:</strong> User-to-user transfers within PNG Trade Hub settle instantly with 0% network gas fees.
+                  <strong className="text-slate-200">Zero-Fee Internal Transfers:</strong> User-to-user transfers within NexKina settle instantly with 0% network gas fees.
                 </p>
               </div>
             </div>
@@ -219,7 +219,7 @@ export const DepositView: React.FC = () => {
               <span>Local PNG Banking Support</span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Traders in Papua New Guinea can buy and sell USDT using Bank of South Pacific (BSP), Kina Bank, Digicel CellMoni, or ANZ. Escrow locks ensure 100% protection during transfers.
+              Traders in Papua New Guinea can buy and sell USDT using Bank of South Pacific (BSP) and Kina Bank. Escrow locks ensure 100% protection during transfers.
             </p>
           </div>
         </div>
