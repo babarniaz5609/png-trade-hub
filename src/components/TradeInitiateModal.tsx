@@ -142,7 +142,7 @@ export const TradeInitiateModal: React.FC<TradeInitiateModalProps> = ({ offer, o
           {isOwnOffer && (
             <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>This is your own listing. You cannot trade against yourself. Switch to another demo user to test.</span>
+              <span>This is your own listing. You cannot trade against yourself. Switch to another user account to trade.</span>
             </div>
           )}
 

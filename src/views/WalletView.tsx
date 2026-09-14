@@ -200,7 +200,7 @@ export const WalletView: React.FC = () => {
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              No simulated transactions or fake balances. All balances are mathematically reconciled through immutable audit records. Escrow reservations are locked server-side during trades.
+              All balances are mathematically reconciled through immutable audit records. Escrow reservations are locked server-side during trades.
             </p>
           </div>
 
@@ -221,11 +221,11 @@ export const WalletView: React.FC = () => {
         <div className="p-5 border-b border-slate-800 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-white">Cryptocurrency Balances</h3>
-            <p className="text-xs text-slate-400">Multi-network wallets connected to Tatum blockchain address vaults</p>
+            <p className="text-xs text-slate-400">Multi-network wallets connected to secure blockchain vaults</p>
           </div>
-          <div className="flex items-center gap-2 text-xs text-amber-400 font-mono bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30">
+          <div className="flex items-center gap-2 text-xs text-emerald-400 font-mono bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/30">
             <Cpu className="w-3.5 h-3.5" />
-            <span>Tatum Integration Prepared</span>
+            <span>Multi-Chain Connected</span>
           </div>
         </div>
 

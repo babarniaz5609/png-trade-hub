@@ -272,17 +272,17 @@ export const HomeView: React.FC = () => {
       {/* Multi-Network & Blockchain Architecture Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-8 sm:p-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-7 space-y-4">
+          <div className="grid grid-cols-1 gap-8 items-center">
+            <div className="space-y-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-semibold border border-blue-500/20">
                 <Layers className="w-3.5 h-3.5" />
                 Multi-Chain Blockchain Ready
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-white">
-                Tatum Multi-Chain Integration Architecture
+                Enterprise Multi-Chain Infrastructure
               </h2>
               <p className="text-sm text-slate-300 leading-relaxed">
-                The platform is architected to seamlessly interface with Tatum’s blockchain engine for automated address generation, incoming webhook monitoring, and multi-network withdrawals without exposing private keys.
+                The platform securely connects to major blockchain networks for seamless multi-network deposits and withdrawals. All assets are safely stored and managed utilizing industry-leading security protocols.
               </p>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
@@ -302,41 +302,6 @@ export const HomeView: React.FC = () => {
                     </span>
                   </div>
                 ))}
-              </div>
-            </div>
-
-            <div className="lg:col-span-5 space-y-4">
-              <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-mono">DATABASE SCHEMA</span>
-                  <span className="text-emerald-400 font-bold">Supabase Postgres</span>
-                </div>
-                <div className="text-xs text-slate-300 space-y-1.5 font-mono">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Atomic Escrow:</span>
-                    <span className="text-emerald-300">PL/pgSQL Trigger</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Row Level Security:</span>
-                    <span className="text-emerald-300">Enabled (10 Tables)</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Backend API:</span>
-                    <span className="text-emerald-300">Express + TypeScript</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Security:</span>
-                    <span className="text-emerald-300">Zero Keys in Client</span>
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <button
-                    onClick={() => setActiveTab('admin')}
-                    className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition"
-                  >
-                    View Live SQL Schema & Tatum Logs
-                  </button>
-                </div>
               </div>
             </div>
           </div>

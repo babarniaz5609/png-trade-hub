@@ -244,17 +244,17 @@ CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING
 
 -- Wallets: Only owner and admins can read
 CREATE POLICY "Users view own wallets" ON public.wallets FOR SELECT USING (
-    auth.uid() = user_id OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    auth.uid() = user_id OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND email = 'adminsp247@gmail.com')
 );
 
 -- Deposits: User sees own deposits; Admin sees all
 CREATE POLICY "Users view own deposits" ON public.deposits FOR SELECT USING (
-    auth.uid() = user_id OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    auth.uid() = user_id OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND email = 'adminsp247@gmail.com')
 );
 
 -- Withdrawals: User sees own; Admin sees and manages all
 CREATE POLICY "Users view own withdrawals" ON public.withdrawals FOR SELECT USING (
-    auth.uid() = user_id OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    auth.uid() = user_id OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND email = 'adminsp247@gmail.com')
 );
 CREATE POLICY "Users can request withdrawal" ON public.withdrawals FOR INSERT WITH CHECK (auth.uid() = user_id);
 
@@ -264,13 +264,13 @@ CREATE POLICY "Users can manage own offers" ON public.p2p_offers FOR ALL USING (
 
 -- P2P Trades: Only buyer, seller, and admin can view and update
 CREATE POLICY "Trade participants and admins can view trade" ON public.p2p_trades FOR SELECT USING (
-    auth.uid() = buyer_id OR auth.uid() = seller_id OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    auth.uid() = buyer_id OR auth.uid() = seller_id OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND email = 'adminsp247@gmail.com')
 );
 
 -- Trade messages: Only participants and admins
 CREATE POLICY "Trade participants can view messages" ON public.p2p_messages FOR SELECT USING (
     EXISTS (SELECT 1 FROM public.p2p_trades WHERE id = trade_id AND (buyer_id = auth.uid() OR seller_id = auth.uid()))
-    OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND email = 'adminsp247@gmail.com')
 );
 CREATE POLICY "Trade participants can insert messages" ON public.p2p_messages FOR INSERT WITH CHECK (
     EXISTS (SELECT 1 FROM public.p2p_trades WHERE id = trade_id AND (buyer_id = auth.uid() OR seller_id = auth.uid()))
@@ -278,7 +278,7 @@ CREATE POLICY "Trade participants can insert messages" ON public.p2p_messages FO
 
 -- Support Tickets: Owner and Admin
 CREATE POLICY "Users view own tickets" ON public.support_tickets FOR SELECT USING (
-    auth.uid() = user_id OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    auth.uid() = user_id OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND email = 'adminsp247@gmail.com')
 );
 CREATE POLICY "Users create own tickets" ON public.support_tickets FOR INSERT WITH CHECK (auth.uid() = user_id);
 
@@ -313,7 +313,7 @@ BEGIN
     END IF;
 
     -- Check if actor is seller or admin
-    SELECT (role = 'admin') INTO v_is_admin FROM public.profiles WHERE id = p_actor_id;
+    SELECT (email = 'adminsp247@gmail.com') INTO v_is_admin FROM public.profiles WHERE id = p_actor_id;
     IF p_actor_id != v_seller_id AND NOT COALESCE(v_is_admin, FALSE) THEN
         RAISE EXCEPTION 'Unauthorized: Only seller or admin can release escrow';
     END IF;

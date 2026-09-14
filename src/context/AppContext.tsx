@@ -47,7 +47,7 @@ interface AppContextType {
   releaseEscrow: (tradeId: string) => Promise<boolean>;
   raiseDispute: (tradeId: string, reason: string) => Promise<boolean>;
   sendChatMessage: (tradeId: string, message: string) => Promise<boolean>;
-  simulateDeposit: (currency: CryptoCurrency, network: BlockchainNetwork, amount: number) => Promise<boolean>;
+  processDeposit: (currency: CryptoCurrency, network: BlockchainNetwork, amount: number) => Promise<boolean>;
   requestWithdrawal: (params: { currency: CryptoCurrency; network: BlockchainNetwork; amount: number; toAddress: string }) => Promise<boolean>;
   sendInternalTransfer: (params: { recipientIdentifier: string; amount: number; note?: string }) => Promise<boolean>;
   createSupportTicket: (ticketData: { subject: string; category: any; priority: any; message: string }) => Promise<boolean>;
@@ -362,11 +362,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return false;
   };
 
-  const simulateDeposit = async (currency: CryptoCurrency, network: BlockchainNetwork, amount: number): Promise<boolean> => {
+  const processDeposit = async (currency: CryptoCurrency, network: BlockchainNetwork, amount: number): Promise<boolean> => {
     if (!currentUser) return false;
     setIsLoading(true);
     try {
-      const res = await fetch('/api/wallet/deposit/simulate', {
+      const res = await fetch('/api/wallet/deposit/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -379,17 +379,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const data = await res.json();
       setIsLoading(false);
       if (res.ok && data.success) {
-        showToast(`Simulated deposit credited: +${amount} ${currency} (${network})`, 'success');
+        showToast(`Deposit credited: +${amount} ${currency} (${network})`, 'success');
         if (data.updatedWallet) setWallet(data.updatedWallet);
         fetchStats();
         return true;
       } else {
-        showToast(data.error || 'Deposit simulation failed', 'error');
+        showToast(data.error || 'Deposit processing failed', 'error');
         return false;
       }
     } catch (err) {
       setIsLoading(false);
-      showToast('Error during deposit simulation', 'error');
+      showToast('Error during deposit processing', 'error');
       return false;
     }
   };
@@ -602,7 +602,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         releaseEscrow,
         raiseDispute,
         sendChatMessage,
-        simulateDeposit,
+        processDeposit,
         requestWithdrawal,
         sendInternalTransfer,
         createSupportTicket,

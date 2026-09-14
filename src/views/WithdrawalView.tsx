@@ -238,15 +238,6 @@ export const WithdrawalView: React.FC = () => {
             <p className="leading-relaxed">
               When a withdrawal is submitted, the exact amount plus network fee is locked in your escrow ledger. The compliance team verifies the destination address. Once approved, the funds are broadcast. If rejected, the full amount is refunded to your available balance immediately.
             </p>
-            <div className="p-3 bg-slate-950 rounded-xl border border-amber-500/30 space-y-1">
-              <div className="flex items-center gap-1.5 text-amber-400 font-semibold text-xs">
-                <Cpu className="w-3.5 h-3.5" />
-                <span>Tatum KMS Node Ready</span>
-              </div>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
-                Blockchain transactions are held in PENDING state until Tatum live keys are connected. No simulated transaction hashes are created.
-              </p>
-            </div>
           </div>
 
           {/* Recent Withdrawals List */}

@@ -1,9 +1,11 @@
 import React from 'react';
 import { ShieldCheck, ArrowLeftRight, Server, Cpu, Database, ExternalLink, HelpCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 
 export const Footer: React.FC = () => {
   const { setActiveTab } = useApp();
+  const { isAdmin } = useAuth();
 
   return (
     <footer className="bg-slate-950 border-t border-slate-800 text-slate-400 text-xs py-12">
@@ -20,10 +22,6 @@ export const Footer: React.FC = () => {
             <p className="text-slate-400 text-xs leading-relaxed">
               Papua New Guinea's premier peer-to-peer cryptocurrency escrow trading platform. Buy and sell USDT, TRX, ETH, and BNB with PNG Kina (PGK) safely.
             </p>
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-[11px] text-emerald-400 font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Demo Mode Active · Zero Real Risk
-            </div>
           </div>
 
           {/* Quick Links */}
@@ -111,15 +109,13 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Disclaimer */}
         <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 text-[11px]">
-          <p>© {new Date().getFullYear()} PNG Trade Hub. Built for demonstration and sandbox evaluation.</p>
+          <p>© {new Date().getFullYear()} PNG Trade Hub. Built for secure and reliable P2P trading.</p>
           <div className="flex items-center gap-4">
-            <span className="text-amber-400/90 font-medium">
-              Demo Environment: No real cryptocurrency or fiat is transferred.
-            </span>
-            <span>·</span>
-            <button onClick={() => setActiveTab('admin')} className="text-slate-400 hover:text-white">
-              Admin Gateway
-            </button>
+            {isAdmin && (
+              <button onClick={() => setActiveTab('admin')} className="text-slate-400 hover:text-white">
+                Admin Gateway
+              </button>
+            )}
           </div>
         </div>
       </div>

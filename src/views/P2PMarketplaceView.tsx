@@ -108,13 +108,20 @@ export const P2PMarketplaceView: React.FC = () => {
             </p>
           </div>
 
-          <button
-            onClick={() => setIsPostModalOpen(true)}
-            className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-2 self-start md:self-auto shadow-md"
-          >
-            <PlusCircle className="w-4 h-4 text-emerald-400" />
-            <span>Post Trade Ad</span>
-          </button>
+          {currentUser?.kycStatus === 'verified' ? (
+            <button
+              onClick={() => setIsPostModalOpen(true)}
+              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-2 self-start md:self-auto shadow-md"
+            >
+              <PlusCircle className="w-4 h-4 text-emerald-400" />
+              <span>Post Trade Ad (Dealer)</span>
+            </button>
+          ) : (
+            <div className="px-4 py-2.5 bg-slate-900 border border-amber-500/30 text-amber-300 font-bold text-xs rounded-xl flex items-center gap-2 shadow-md">
+              <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span>Complete KYC to Post Ads</span>
+            </div>
+          )}
         </div>
 
         {/* Buy / Sell & Crypto Currency Filters */}
@@ -241,12 +248,18 @@ export const P2PMarketplaceView: React.FC = () => {
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
               No active ads match your selected payment method or amount limits. Try resetting filters or post your own trading ad.
             </p>
-            <button
-              onClick={() => setIsPostModalOpen(true)}
-              className="mt-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow transition"
-            >
-              Post a New Ad
-            </button>
+            {currentUser?.kycStatus === 'verified' ? (
+              <button
+                onClick={() => setIsPostModalOpen(true)}
+                className="mt-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow transition"
+              >
+                Post a New Ad (Dealer)
+              </button>
+            ) : (
+              <div className="mt-2 px-4 py-2 bg-slate-800 border border-amber-500/30 text-amber-300 font-bold text-xs rounded-xl inline-flex items-center justify-center">
+                Complete KYC to Post Ads
+              </div>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-3">

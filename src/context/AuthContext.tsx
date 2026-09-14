@@ -311,7 +311,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toggle2FA,
         refreshUserData,
         isLoading,
-        isAdmin: currentUser?.role === 'admin' || currentUser?.email?.toLowerCase() === 'adminsp247@gmail.com'
+        isAdmin: currentUser?.email?.toLowerCase() === 'adminsp247@gmail.com'
       }}
     >
       {children}

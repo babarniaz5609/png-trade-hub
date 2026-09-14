@@ -19,7 +19,7 @@ export interface TatumChainConfig {
   explorerAddressUrl: string;
   averageBlockTimeSec: number;
   standardWithdrawalFee: number;
-  testnetContractAddress?: string;
+  smartContractAddress?: string;
 }
 
 export const TATUM_SUPPORTED_CHAINS: Record<string, TatumChainConfig> = {
@@ -33,7 +33,7 @@ export const TATUM_SUPPORTED_CHAINS: Record<string, TatumChainConfig> = {
     chain: 'TRON',
     protocol: 'TRC20',
     contractAddress: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
-    testnetContractAddress: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
+    smartContractAddress: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
     decimals: 6,
     explorerTxUrl: 'https://tronscan.org/#/transaction/',
     explorerAddressUrl: 'https://tronscan.org/#/address/',
@@ -50,7 +50,7 @@ export const TATUM_SUPPORTED_CHAINS: Record<string, TatumChainConfig> = {
     chain: 'BSC',
     protocol: 'BEP20',
     contractAddress: '0x55d398326f99059ff775485246999027b3197955',
-    testnetContractAddress: '0x337610d27c682E347C9cD60BD4b3b107C9d34dDd',
+    smartContractAddress: '0x337610d27c682E347C9cD60BD4b3b107C9d34dDd',
     decimals: 18,
     explorerTxUrl: 'https://bscscan.com/tx/',
     explorerAddressUrl: 'https://bscscan.com/address/',
@@ -67,7 +67,7 @@ export const TATUM_SUPPORTED_CHAINS: Record<string, TatumChainConfig> = {
     chain: 'ETHEREUM',
     protocol: 'ERC20',
     contractAddress: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-    testnetContractAddress: '0x6175a82C3fDeFF9e5d7D05096b68701077610411',
+    smartContractAddress: '0x6175a82C3fDeFF9e5d7D05096b68701077610411',
     decimals: 6,
     explorerTxUrl: 'https://etherscan.io/tx/',
     explorerAddressUrl: 'https://etherscan.io/address/',

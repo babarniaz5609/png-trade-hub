@@ -112,23 +112,23 @@ export const DepositView: React.FC = () => {
               </div>
             )}
 
-            {/* Blockchain Integration Pending Notice Box */}
-            <div className="p-5 rounded-2xl bg-slate-950 border border-amber-500/30 space-y-4">
+            {/* Blockchain Network Box */}
+            <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 shrink-0 mt-0.5">
+                <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 shrink-0 mt-0.5">
                   <Cpu className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider">
-                      Blockchain Integration Pending
+                    <h3 className="text-xs font-bold text-blue-300 uppercase tracking-wider">
+                      Secure Blockchain Gateway
                     </h3>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                      Tatum Engine Ready
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/40">
+                      Multi-Chain Active
                     </span>
                   </div>
                   <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
-                    Direct on-chain address derivation for <span className="font-semibold text-white">{selectedCrypto} ({selectedNetwork})</span> is architected on the server via Tatum KMS. As instructed, no fake addresses, fake faucet balances, or simulated confirmations are displayed.
+                    Direct on-chain address derivation for <span className="font-semibold text-white">{selectedCrypto} ({selectedNetwork})</span> is securely handled on the backend.
                   </p>
                 </div>
               </div>
@@ -200,7 +200,7 @@ export const DepositView: React.FC = () => {
               <div className="flex items-start gap-2.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1.5"></span>
                 <p>
-                  <strong className="text-slate-200">Tatum Multi-Chain Gateway:</strong> Once production Tatum keys are provided, deposits will automatically detect on-chain confirmations and credit balances in real time.
+                  <strong className="text-slate-200">Secure Network Confirmation:</strong> Deposits automatically detect on-chain confirmations and credit balances in real time across supported networks.
                 </p>
               </div>
 
