@@ -171,28 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // 2. Authoritative server ledger API
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail, password })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        setIsLoading(false);
-        return { success: false, error: data.error || "Login failed" };
-      }
-
-      const verifiedUser: User = {
-        ...data.user,
-        role: (data.user.role === 'admin' || isOwnerAdmin) ? 'admin' : 'user',
-        kycStatus: isOwnerAdmin ? 'verified' : data.user.kycStatus
-      };
-
-      setCurrentUser(verifiedUser);
-      setIsLoading(false);
-      return { success: true };
+      return { success: false, error: "Login failed via Supabase" };
     } catch (err: any) {
       setIsLoading(false);
       return { success: false, error: err.message || "Network error during login" };
@@ -218,7 +197,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // 1. If real Supabase connected, create user via Supabase Auth
       if (isRealSupabaseConnected) {
         try {
-          await supabase.auth.signUp({
+          const { data, error } = await supabase.auth.signUp({
             email: cleanEmail,
             password,
             options: {
@@ -230,35 +209,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
             }
           });
+          if (!error && data.user) {
+             return { success: true };
+          } else {
+             return { success: false, error: error?.message || "Signup failed" };
+          }
         } catch (supabaseErr) {
           console.warn("[Supabase Auth] Fallback on signup:", supabaseErr);
         }
       }
 
-      // 2. Register in server ledger authority
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: cleanEmail,
-          username: userData.username,
-          password,
-          role: assignedRole,
-          country: userData.country || 'Papua New Guinea',
-          phoneNumber: userData.phoneNumber
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        setIsLoading(false);
-        return { success: false, error: data.error || "Registration failed" };
-      }
-
-      setCurrentUser(data.user);
-      await refreshUsersList();
-      setIsLoading(false);
-      return { success: true };
+      return { success: false, error: "Signup failed via Supabase" };
     } catch (err: any) {
       setIsLoading(false);
       return { success: false, error: err.message || "Network error during sign up" };

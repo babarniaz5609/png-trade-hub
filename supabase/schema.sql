@@ -345,3 +345,32 @@ BEGIN
     RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to auto-create profile on signup
+CREATE OR REPLACE FUNCTION public.handle_new_user() 
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, username, role, kyc_status)
+  VALUES (
+    new.id, 
+    new.email, 
+    COALESCE(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1)),
+    COALESCE(new.raw_user_meta_data->>'role', 'user'),
+    'unverified'
+  );
+  
+  -- Create initial wallet
+  INSERT INTO public.wallets (user_id, currency, network, available_balance, locked_escrow_balance)
+  VALUES 
+    (new.id, 'USDT', 'TRC20', 0, 0),
+    (new.id, 'PGK', 'BANK', 0, 0);
+    
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+

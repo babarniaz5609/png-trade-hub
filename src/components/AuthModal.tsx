@@ -88,39 +88,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Quick Credential Fills */}
-        <div className="p-4 bg-slate-950/40 border-b border-slate-800 text-xs">
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-            Verified Accounts (Click to Fill)
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              onClick={() => handleFillCredentials('sarah@pngtradehub.com')}
-              className="p-2 rounded-xl text-left border border-slate-800 bg-slate-850 hover:bg-slate-800 hover:border-emerald-500/40 text-slate-200 transition"
-            >
-              <div className="font-bold text-xs truncate">Sarah</div>
-              <div className="text-[10px] text-emerald-400">Merchant (1000 USDT)</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleFillCredentials('john@pngtradehub.com')}
-              className="p-2 rounded-xl text-left border border-slate-800 bg-slate-850 hover:bg-slate-800 hover:border-emerald-500/40 text-slate-200 transition"
-            >
-              <div className="font-bold text-xs truncate">John</div>
-              <div className="text-[10px] text-slate-400">Buyer (250 USDT)</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleFillCredentials('adminsp247@gmail.com')}
-              className="p-2 rounded-xl text-left border border-amber-500/30 bg-amber-950/20 hover:bg-amber-900/30 text-amber-200 transition"
-              title="Master Super Admin (adminsp247@gmail.com)"
-            >
-              <div className="font-bold text-xs truncate">Super Admin</div>
-              <div className="text-[10px] text-amber-400 truncate">adminsp247@gmail.com</div>
-            </button>
-          </div>
-        </div>
+        
+        
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4">

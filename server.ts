@@ -12,7 +12,8 @@ import {
   isTatumConnected 
 } from "./server/tatumService";
 import { 
-  checkSupabaseHealth, 
+  checkSupabaseHealth,
+  getSupabaseClient, 
   getSqlSchemaContent,
   syncUserProfile,
   syncP2POffer,
@@ -294,124 +295,74 @@ function formatWalletForClient(wallet: InternalUserWallet) {
   };
 }
 
-// Seed default production admin and initial verified merchant accounts
-function seedInitialProductionAccounts() {
-  // Primary Master Super Admin Account requested by owner
-  const masterAdminUser: UserProfile = {
-    id: "usr_admin_sp247",
-    email: "adminsp247@gmail.com",
-    username: "AdminSP247",
-    role: "admin",
-    kycStatus: "verified",
-    isFrozen: false,
-    twoFactorEnabled: true,
-    totalTrades: 0,
-    completionRate: 100,
-    positiveReviews: 0,
-    negativeReviews: 0,
-    country: "Papua New Guinea",
-    preferredFiat: "PGK",
-    createdAt: new Date().toISOString()
-  };
-  usersStore.set(masterAdminUser.id, masterAdminUser);
-  initUserWallet(masterAdminUser.id);
-  syncUserProfile(masterAdminUser);
-
-  // Initial Verified Trader 1 (Sarah - Merchant)
-  const sarahUser: UserProfile = {
-    id: "usr_sarah_merchant",
-    email: "sarah@pngtradehub.com",
-    username: "Sarah_Merchant",
-    role: "user",
-    kycStatus: "verified",
-    isFrozen: false,
-    twoFactorEnabled: true,
-    totalTrades: 12,
-    completionRate: 100,
-    positiveReviews: 12,
-    negativeReviews: 0,
-    country: "Papua New Guinea",
-    preferredFiat: "PGK",
-    phoneNumber: "+675 7234 1111",
-    createdAt: new Date().toISOString()
-  };
-  usersStore.set(sarahUser.id, sarahUser);
-  const sarahWallet = initUserWallet(sarahUser.id);
-  sarahWallet.balances.USDT.available = 1000.00;
-  ledgerStore.push({
-    id: `led_init_sarah`,
-    userId: sarahUser.id,
-    currency: 'USDT',
-    network: 'INTERNAL',
-    amount: 1000.00,
-    balanceBefore: 0,
-    balanceAfter: 1000.00,
-    type: 'DEPOSIT_CREDIT',
-    referenceId: 'init_merchant_capital',
-    description: 'Initial verified merchant liquidity reserve',
-    timestamp: new Date().toISOString()
-  });
-
-  // Initial Verified Trader 2 (John - Buyer)
-  const johnUser: UserProfile = {
-    id: "usr_john_buyer",
-    email: "john@pngtradehub.com",
-    username: "John_POM",
-    role: "user",
-    kycStatus: "verified",
-    isFrozen: false,
-    twoFactorEnabled: false,
-    totalTrades: 4,
-    completionRate: 100,
-    positiveReviews: 4,
-    negativeReviews: 0,
-    country: "Papua New Guinea",
-    preferredFiat: "PGK",
-    phoneNumber: "+675 7987 2222",
-    createdAt: new Date().toISOString()
-  };
-  usersStore.set(johnUser.id, johnUser);
-  const johnWallet = initUserWallet(johnUser.id);
-  johnWallet.balances.USDT.available = 250.00;
-  ledgerStore.push({
-    id: `led_init_john`,
-    userId: johnUser.id,
-    currency: 'USDT',
-    network: 'INTERNAL',
-    amount: 250.00,
-    balanceBefore: 0,
-    balanceAfter: 250.00,
-    type: 'DEPOSIT_CREDIT',
-    referenceId: 'init_trader_capital',
-    description: 'Initial verified trader balance',
-    timestamp: new Date().toISOString()
-  });
-
-  // Initial verified P2P Sell offer from Sarah
-  const offerId = "offer_sarah_usdt_pgk";
-  p2pOffersStore.set(offerId, {
-    id: offerId,
-    userId: sarahUser.id,
-    userUsername: sarahUser.username,
-    type: 'SELL',
-    cryptoCurrency: 'USDT',
-    fiatCurrency: 'PGK',
-    pricePerUnit: 4.15,
-    totalAmount: 500,
-    availableAmount: 500,
-    minLimit: 100,
-    maxLimit: 2000,
-    paymentMethods: ['Bank of South Pacific (BSP)', 'Kina Bank', 'Digicel CellMoni'],
-    paymentWindowMinutes: 15,
-    terms: 'Only send payment from a bank account in your own name. Put trade reference number in remarks.',
-    autoReply: 'Hello! Please transfer the exact PGK amount to BSP account #1002345678 (Sarah Kila). Once done, click "Transferred" and I will release USDT instantly.',
-    status: 'ACTIVE',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  });
+function recordAuditTrail(userId: string, type: string, actor: string, details: any) {
+  console.log(`[Audit Trail] User: ${userId} | Type: ${type} | Actor: ${actor}`, details);
 }
 
-seedInitialProductionAccounts();
+// Seed default production admin and initial verified merchant accounts
+
+async function seedInitialProductionAccounts() {
+  
+  const supabase = getSupabaseClient();
+  if (!supabase) return;
+  try {
+    const { data: profiles } = await supabase.from('profiles').select('*');
+    if (profiles) {
+      profiles.forEach((p) => {
+        usersStore.set(p.id, {
+          id: p.id,
+          email: p.email,
+          username: p.username,
+          role: p.role,
+          kycStatus: p.kyc_status,
+          kycDocumentType: p.kyc_document_type,
+          kycDocumentNumber: p.kyc_document_number,
+          kycSubmittedAt: p.kyc_submitted_at,
+          kycVerifiedAt: p.kyc_verified_at,
+          isFrozen: p.is_frozen,
+          twoFactorEnabled: p.two_factor_enabled,
+          totalTrades: p.total_trades,
+          completionRate: p.completion_rate,
+          positiveReviews: p.positive_reviews,
+          negativeReviews: p.negative_reviews,
+          phoneNumber: p.phone_number,
+          country: p.country,
+          preferredFiat: p.preferred_fiat,
+          createdAt: p.created_at
+        });
+      });
+    }
+
+    const { data: wallets } = await supabase.from('wallets').select('*');
+    if (wallets) {
+      const wMap = new Map();
+      wallets.forEach((w) => {
+        if (!wMap.has(w.user_id)) {
+          wMap.set(w.user_id, {
+            id: 'wallet_' + w.user_id,
+            userId: w.user_id,
+            balances: {},
+            depositAddresses: {},
+            updatedAt: w.updated_at
+          });
+        }
+        wMap.get(w.user_id).balances[w.currency] = {
+           available: Number(w.available_balance),
+           lockedEscrow: Number(w.locked_escrow_balance)
+        };
+      });
+      wMap.forEach((v, k) => {
+        // ensure default USDT/PGK if missing
+        if(!v.balances.USDT) v.balances.USDT = { available: 0, lockedEscrow: 0 };
+        if(!v.balances.PGK) v.balances.PGK = { available: 0, lockedEscrow: 0 };
+        walletsStore.set(k, v);
+      });
+    }
+  } catch(e) {
+    console.error("Hydration error", e);
+  }
+}
+
 
 // ==============================================================================
 // ATOMIC BALANCE & ESCROW OPERATIONS
@@ -686,7 +637,36 @@ app.get("/api/users", (req, res) => {
   res.json(list);
 });
 
-app.get("/api/users/:id", (req, res) => {
+app.get("/api/users/:id", async (req, res) => {
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    const { data: p } = await supabase.from('profiles').select('*').eq('id', req.params.id).single();
+    if (p) {
+      const u = {
+          id: p.id,
+          email: p.email,
+          username: p.username,
+          role: p.role,
+          kycStatus: p.kyc_status,
+          kycDocumentType: p.kyc_document_type,
+          kycDocumentNumber: p.kyc_document_number,
+          kycSubmittedAt: p.kyc_submitted_at,
+          kycVerifiedAt: p.kyc_verified_at,
+          isFrozen: p.is_frozen,
+          twoFactorEnabled: p.two_factor_enabled,
+          totalTrades: p.total_trades,
+          completionRate: p.completion_rate,
+          positiveReviews: p.positive_reviews,
+          negativeReviews: p.negative_reviews,
+          phoneNumber: p.phone_number,
+          country: p.country,
+          preferredFiat: p.preferred_fiat,
+          createdAt: p.created_at
+      };
+      usersStore.set(u.id, u);
+      return res.json(u);
+    }
+  }
   const user = usersStore.get(req.params.id);
   if (!user) return res.status(404).json({ error: "User not found" });
   res.json({ ...user, passwordHash: undefined });
@@ -703,6 +683,43 @@ app.post("/api/users/:id/kyc", (req, res) => {
   user.kycSubmittedAt = new Date().toISOString();
 
   res.json({ success: true, user: { ...user, passwordHash: undefined } });
+});
+
+// Enforce admin authorization backend middleware for all /api/admin routes
+app.use("/api/admin", async (req, res, next) => {
+  const adminHeader = req.headers['x-admin-email'] || req.body?.adminEmail || req.query?.adminEmail || req.headers['x-user-email'];
+  const userId = req.headers['x-user-id'] || req.body?.userId;
+  let isAdmin = false;
+
+  if (adminHeader === 'adminsp247@gmail.com') {
+    isAdmin = true;
+  } else if (userId) {
+    const user = usersStore.get(userId);
+    if (user && user.email?.toLowerCase() === 'adminsp247@gmail.com') {
+      isAdmin = true;
+    }
+  }
+
+  const authHeader = req.headers.authorization;
+  if (!isAdmin && authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser(token);
+        if (user && user.email?.toLowerCase() === 'adminsp247@gmail.com') {
+          isAdmin = true;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }
+
+  if (!isAdmin) {
+    return res.status(403).json({ error: "Access denied. Only adminsp247@gmail.com has admin authorization." });
+  }
+  next();
 });
 
 app.post("/api/admin/users/:id/verify-kyc", (req, res) => {
@@ -1748,6 +1765,7 @@ async function startServer() {
     });
   }
 
+  await seedInitialProductionAccounts();
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`PNG Trade Hub Production Server running at http://0.0.0.0:${PORT}`);
     console.log(`[Tatum Multi-Chain Engine]: ${isTatumConnected() ? 'CONNECTED' : 'INTEGRATION PENDING (Awaiting TATUM_API_KEY)'}`);
