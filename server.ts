@@ -1835,8 +1835,8 @@ app.post("/api/supabase/sync", async (req, res) => {
 // ==========================================
 // VITE INTEGRATION & SERVER STARTUP
 // ==========================================
-async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
+export async function startServer() {
+  if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -1851,10 +1851,20 @@ async function startServer() {
   }
 
   await seedInitialProductionAccounts();
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`NexKina Production Server running at http://0.0.0.0:${PORT}`);
-    console.log(`[Tatum Multi-Chain Engine]: ${isTatumConnected() ? 'CONNECTED' : 'INTEGRATION PENDING (Awaiting TATUM_API_KEY)'}`);
-  });
+
+  if (process.env.VERCEL) {
+    console.log("Running in Vercel Serverless mode - Express app exported.");
+  } else {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`NexKina Production Server running at http://0.0.0.0:${PORT}`);
+      console.log(`[Tatum Multi-Chain Engine]: ${isTatumConnected() ? 'CONNECTED' : 'INTEGRATION PENDING (Awaiting TATUM_API_KEY)'}`);
+    });
+  }
 }
 
-startServer();
+// Automatically start if executed directly and not on Vercel
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
