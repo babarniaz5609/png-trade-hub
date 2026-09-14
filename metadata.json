@@ -1,0 +1,6 @@
+{
+  "name": "PNG Trade Hub",
+  "description": "Modern full-stack P2P USDT & crypto trading platform with escrow, instant transfers, and admin controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
